@@ -18,3 +18,12 @@ To re-create any of our figures, see `./toxicity/eval_interventions/figures`.
 ## How to Cite
 
 If you find our work relevant, please cite as following:
+
+```
+@article{lee2024mechanistic,
+  title={A Mechanistic Understanding of Alignment Algorithms: A Case Study on DPO and Toxicity},
+  author={Lee, Andrew and Bai, Xiaoyan and Pres, Itamar and Wattenberg, Martin and Kummerfeld, Jonathan K and Mihalcea, Rada},
+  journal={arXiv preprint arXiv:2401.01967},
+  year={2024}
+}
+```
