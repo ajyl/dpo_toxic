@@ -27,3 +27,5 @@ TOXICITY_METRICS = [
 PERSPECTIVE_API_ATTRIBUTES = TOXICITY_METRICS
 with open(os.path.join(ROOT_DIR, "api_key"), "r") as file_p:
     PERSPECTIVE_API_KEY = file_p.readlines()[0].strip()
+
+GPT2_PAD_IDX = 50256

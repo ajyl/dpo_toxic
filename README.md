@@ -15,6 +15,15 @@ To run interventions, see `./toxicity/eval_interventions/run_evaluations.py`.
 
 To re-create any of our figures, see `./toxicity/eval_interventions/figures`.
 
+## Training DPO
+
+To train your own dpo model:
+```
+cd toxicity/train_dpo
+python train.py exp_name="[name of your experiment]"
+```
+
+
 ## How to Cite
 
 If you find our work relevant, please cite as following:
