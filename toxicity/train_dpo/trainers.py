@@ -460,9 +460,6 @@ class BasicTrainer(object):
                 ref_pos_logits,
                 ref_neg_logits,
             )
-            if loss_config.kl_gamma > 0:
-                kl_loss = loss_config.kl_gamma * (pos_kl_div + neg_kl_div)
-                losses += kl_loss
 
             reward_accuracies = (pos_rewards > neg_rewards).float()
 
@@ -503,11 +500,6 @@ class BasicTrainer(object):
             metrics[f"kl_div_{train_test}/negative"] = (
                 neg_kl_div.detach().cpu().numpy().tolist()
             )
-
-            if loss_config.kl_gamma > 0 and kl_loss is not None:
-                metrics[f"kl_loss_{train_test}"] = (
-                    kl_loss.detach().cpu().numpy().tolist()
-                )
 
         elif loss_config.name == "sft":
             policy_pos_logits = self.policy(
