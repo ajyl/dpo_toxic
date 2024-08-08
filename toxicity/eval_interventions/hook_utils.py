@@ -1,26 +1,23 @@
 """
 Utility functions for hooking.
 """
+
 from functools import partial
 import torch
 import torch.nn.functional as F
 
 
-def get_svd_u_vec(model, toxic_vector, topk_sorted_score, U_idx):
-    """
-    Get the svd U vector
-    toxic_vector: toxic_vector [d_model]
-    topk_sorted_score: (int) vectors we want to get
-    U_idx: which u vec
+def rank_value_vecs(model, toxic_vector):
+    """ 
+    Rank all value vectors based on similarity vs. toxic_vector.
+    toxic_vector: [d_model]
     """
     scores = []
     for layer in range(model.config.n_layer):
         # mlp_outs = model.blocks[layer].mlp.W_out
         # [d_mlp, d_model]
         mlp_outs = model.transformer.h[layer].mlp.c_proj.weight
-        cos_sims = F.cosine_similarity(
-            mlp_outs, toxic_vector.unsqueeze(0), dim=1
-        )
+        cos_sims = F.cosine_similarity(mlp_outs, toxic_vector.unsqueeze(0), dim=1)
         _topk = cos_sims.topk(k=100)
         _values = [x.item() for x in _topk.values]
         _idxs = [x.item() for x in _topk.indices]
@@ -28,6 +25,17 @@ def get_svd_u_vec(model, toxic_vector, topk_sorted_score, U_idx):
         scores.extend(topk)
 
     sorted_scores = sorted(scores, key=lambda x: x[0], reverse=True)
+    return sorted_scores
+
+
+def get_svd_u_vec(model, toxic_vector, topk_sorted_score, U_idx):
+    """
+    Get the svd U vector
+    toxic_vector: toxic_vector [d_model]
+    topk_sorted_score: (int) vectors we want to get
+    U_idx: Index of u vector.
+    """
+    sorted_scores = rank_value_vecs(model, toxic_vector)
     top_vecs = [
         # model.blocks[x[2]].mlp.W_out[x[1]]
         model.transformer.h[x[2]].mlp.c_proj.weight[x[1]]

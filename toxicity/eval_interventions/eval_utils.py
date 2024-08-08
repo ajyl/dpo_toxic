@@ -1,12 +1,14 @@
 """
 Utility functions to save/load models, data, etc.
 """
+
 import json
 import torch
 from tabulate import tabulate
 from datasets import load_dataset
 from transformers import AutoModelForCausalLM, AutoTokenizer, GPT2Tokenizer
 from transformer_lens import HookedTransformer
+from toxicity.eval_interventions.hook_utils import rank_value_vecs
 
 
 def tokenize(tokenizer, data, config):
@@ -75,10 +77,35 @@ def load_model(config):
     state_dict = None
     if state_dict_path is not None:
         state_dict = torch.load(state_dict_path)["state"]
+
     # model = HookedTransformer.from_pretrained(model_name)
-    model = AutoModelForCausalLM.from_pretrained(
-        model_name, state_dict=state_dict
-    ).to(config["device"])
+    model = AutoModelForCausalLM.from_pretrained(model_name, state_dict=state_dict).to(
+        config["device"]
+    )
+
+    if "unalign" in config:
+        state_dict = model.state_dict()
+        probe_path = config["unalign"]["probe_path"]
+        num_value_vecs = config["unalign"]["num_value_vecs"]
+        scale = config["unalign"]["scale"]
+
+        probe = torch.load(probe_path)
+        top_value_vecs = rank_value_vecs(model, probe)
+        top_value_vecs = top_value_vecs[:num_value_vecs]
+
+        for vec in top_value_vecs:
+            layer = vec[2]
+            idx = vec[1]
+
+            value_vec_name = f"transformer.h.{layer}.mlp.c_fc.weight"
+            state_dict[value_vec_name][:, idx] = (
+                state_dict[value_vec_name][:, idx] * scale
+            )
+
+        model = AutoModelForCausalLM.from_pretrained(
+            model_name, state_dict=state_dict
+        ).to(config["device"])
+
     if tokenizer_name.startswith("gpt2"):
         tokenizer = GPT2Tokenizer.from_pretrained(tokenizer_name)
         tokenizer.padding_side = "left"
@@ -105,9 +132,7 @@ def load_data(data_config):
 
     assert "dataname" in data_config
     assert "split" in data_config
-    data = load_dataset(
-        datapath, data_config["dataname"], split=data_config["split"]
-    )
+    data = load_dataset(datapath, data_config["dataname"], split=data_config["split"])
     return [{"prompt": "\n\n".join(data["text"])}]
 
 

@@ -107,9 +107,7 @@ def unhook_model(model, hooks):
         hook.remove()
 
 
-def _eval_intervene(
-    model, tokenizer, model_config, intervene_config, metric_configs
-):
+def _eval_intervene(model, tokenizer, model_config, intervene_config, metric_configs):
     """
     Evaluation intervention on set of metrics.
     """
@@ -137,9 +135,7 @@ def _eval_intervene(
             intervene_config["params"]["max_new_tokens"] = _metric_conf[
                 "max_new_tokens"
             ]
-            intervene_config["params"]["batch_size"] = model_config[
-                "batch_size"
-            ]
+            intervene_config["params"]["batch_size"] = model_config["batch_size"]
             generations = generate(model, data, intervene_config)
             for gen in generations["pred_text"][:30]:
                 verbose_print(gen)
@@ -242,7 +238,7 @@ def run_eval(config):
 
 
 def main():
-    """ Driver """
+    """Driver"""
     config = {
         "model": {
             "model_or_path": "gpt2-medium",
@@ -253,11 +249,11 @@ def main():
         },
         "metrics": [
             {
-                "datapath": os.path.join(
-                    DATA_DIR, "challenge_prompts_dev.jsonl"
-                )
-                if VERBOSE
-                else os.path.join(DATA_DIR, "challenge_prompts.jsonl"),
+                "datapath": (
+                    os.path.join(DATA_DIR, "challenge_prompts_dev.jsonl")
+                    if VERBOSE
+                    else os.path.join(DATA_DIR, "challenge_prompts.jsonl")
+                ),
                 "metric": "perspective_api",
                 "max_prompt_size": 32,
                 "max_new_tokens": 20,
@@ -272,9 +268,11 @@ def main():
                 "generate": False,
             },
             {
-                "datapath": os.path.join(DATA_DIR, "wiki_samples_dev.jsonl")
-                if VERBOSE
-                else os.path.join(DATA_DIR, "wiki_samples.jsonl"),
+                "datapath": (
+                    os.path.join(DATA_DIR, "wiki_samples_dev.jsonl")
+                    if VERBOSE
+                    else os.path.join(DATA_DIR, "wiki_samples.jsonl")
+                ),
                 "metric": "f1",
                 "max_prompt_size": 32,
                 "max_new_tokens": 20,
@@ -284,13 +282,14 @@ def main():
         "interventions": [
             {"method": "noop", "params": {}},
             {
-            "method": "subtraction",
-            "params": {
-                "type": "mlp_w_out",
-                "idx": 770,
-                "layer": 19,
-                "subtract_from": [[23]],
-                "scales": [20],
+                "method": "subtraction",
+                "params": {
+                    "type": "mlp_w_out",
+                    "idx": 770,
+                    "layer": 19,
+                    "subtract_from": [[23]],
+                    "scales": [20],
+                },
             },
             {
                 "method": "subtraction",
