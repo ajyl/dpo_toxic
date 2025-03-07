@@ -1,6 +1,6 @@
 # Mechanistically Understanding DPO: Toxicity
 
-This repository provides the models, data, and experiments used in A Mechanistic Understanding of Alignment Algorithms: A Case Study on DPO and Toxicity.
+This repository provides the models, data, and experiments used in [A Mechanistic Understanding of Alignment Algorithms: A Case Study on DPO and Toxicity](https://arxiv.org/abs/2401.01967).
 
 ## Models, Data
 
